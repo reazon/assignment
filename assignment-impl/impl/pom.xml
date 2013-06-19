@@ -20,6 +20,27 @@
     <deploy.target/>
   </properties>
   <dependencies>
+
+    <dependency>
+        <groupId>org.sakaiproject</groupId>
+        <artifactId>sakai-gradebook-irubric-impl</artifactId>
+        <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+        <groupId>org.sakaiproject</groupId>
+        <artifactId>sakai-gradebook-irubric-api</artifactId>
+        <version>${project.version}</version>
+    </dependency>
+
+     <!-- DN 2013-02-20: add mapping for irubric -->
+    <dependency>
+        <groupId>org.sakaiproject</groupId>
+        <artifactId>sakai-gradebook-irubric</artifactId>
+        <version>${project.version}</version>
+        <scope>provided</scope>
+    </dependency>
+
     <dependency>
       <groupId>org.sakaiproject.kernel</groupId>
       <artifactId>sakai-kernel-util</artifactId>

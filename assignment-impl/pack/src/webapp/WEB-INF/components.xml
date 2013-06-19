@@ -71,6 +71,7 @@
 				<value>org/sakaiproject/assignment/api/model/AssignmentSupplementItemAttachment.hbm.xml</value>
 				<value>org/sakaiproject/assignment/api/model/AssignmentSupplementItem.hbm.xml</value>
 				<value>org/sakaiproject/assignment/api/model/AssignmentAllPurposeItemAccess.hbm.xml</value>
+				<value>org/sakaiproject/tool/gradebook/iRubric/GradableObjectRubric.hbm.xml</value>
 			</list>
 		</property>
 	</bean>
@@ -120,5 +121,23 @@
 		<property name="siteService" ref="org.sakaiproject.site.api.SiteService" />
         <property name="securityService" ref="org.sakaiproject.authz.api.SecurityService" />
 	</bean>
-  
+  	
+  	<bean id="com.reazon.tool.irubric.IRubricManager"
+			class="com.reazon.tool.irubric.impl.IRubricManagerHibernateImpl">
+			<property name="sessionFactory">
+		    	<ref bean="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory" />
+		    </property>
+	 	<property name="sectionAwareness"><ref bean="org.sakaiproject.section.api.SectionAwareness" /></property>				
+	</bean>
+	
+	 <bean id="org.sakaiproject.assignment.api.AssignmentRubService"
+    	class="org.sakaiproject.assignment.impl.AssignmentRubServiceImpl"
+    	singleton="true" init-method="init" destroy-method="destroy">
+    	<property name="sessionFactory">
+   			<ref
+    			bean="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory" />
+    	</property>
+    	<property name="rubricManager" ref="com.reazon.tool.irubric.IRubricManager"/>
+    </bean>
+
 </beans>

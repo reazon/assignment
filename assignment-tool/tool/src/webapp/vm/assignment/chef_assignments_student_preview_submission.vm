@@ -1,6 +1,12 @@
 <!-- $Id$ -->
 <!-- start: chef_assignments_student_preview_submission.vm -->
 #parse("/vm/assignment/assignment_macros.vm")
+
+<!--DN 2012-09-22:if have define gradebookitem(this mean is have include gradebook item from gradebook) then add js rubric -->
+#if($!isShowiRubricLink && $!gradebookItem)
+<script type="text/javascript" src="/library/js/jquery.js"></script>
+#end
+
 <div class="portletBody">
 
 	<h3>
@@ -70,6 +76,15 @@
 					#if ($gradeTypeTable.get($assignment.getContent().getTypeOfGrade()) == $!tlang.getString("points"))
 						($tlang.getString("stupresub.max") $assignment.getContent().getMaxGradePointDisplay())
 					#end
+					
+					<!--DN 2012-09-26:view grade iRubric -->
+					#if($!isShowiRubricLink && $!gradebookItem)
+						
+						<!--DN 2012-09-24: include file chef_assignments_irubric.vm -->
+						#parse ("/vm/assignment/chef_assignments_irubric.vm")
+						
+			        #end
+
 				</td>
 			</tr>
 		#end

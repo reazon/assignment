@@ -1,0 +1,26 @@
+<!--DN 2012-10-12:move js(optimize code) -->
+<script type="text/javascript"  src="/sakai-assignment-tool/js/irubric.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function(){
+
+		//create iRubric link
+		getLinkiRubric();
+		
+    });
+</script>
+
+<input type="hidden" id="Purpose" value="$Purpose" />
+<input type="hidden" id="gradebookUId" value="$gradebookUId" />
+<input type="hidden" id="studentUId"  value="$studentUId" />
+<input type="hidden" id="gradebookItem" value="$gradebookItem" />
+
+<span style="margin-left:10px;display:none;" id="irubric-area">
+   	<a href="#" id="irubric-link"><img src="/sakai-gradebook-tool/images/rubric.gif" alt="iRubric Link" /></a>
+   
+   	<!--if use grade then show link refresh grade -->
+   	#if($Purpose == "grade")
+   		<a href="#" id="irubric-refresh"><img src="/sakai-gradebook-tool/images/refresh.gif" alt="iRubric Refresh" /></a>
+   		<a href="#" style="display:none" id="irubric-grading-refresh">Grading... Click here to refresh grade</a>
+   	#end
+</span>
