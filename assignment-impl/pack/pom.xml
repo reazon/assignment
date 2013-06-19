@@ -38,5 +38,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
+	
+	<dependency>
+            <groupId>org.sakaiproject.edu-services.gradebook</groupId>
+            <artifactId>gradebook-service-api</artifactId>
+        </dependency>
+
     </dependencies>
 </project>

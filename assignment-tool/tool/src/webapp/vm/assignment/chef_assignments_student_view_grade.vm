@@ -94,6 +94,15 @@
 									#end
 									#if ($gradeTypeTable.get($assignment.getContent().getTypeOfGrade()) == $!tlang.getString("points"))
 										($tlang.getString("grade.max") $assignment.getContent().getMaxGradePointDisplay())
+										
+										<!--DN 2012-09-26:view grade iRubric -->
+										#if($!isShowiRubricLink && $!gradebookItem)
+											
+											<!--DN 2012-09-24: include file chef_assignments_irubric.vm -->
+											#parse ("/vm/assignment/chef_assignments_irubric.vm")
+											
+								        #end
+								        
 									#end
 								</strong>
 							</td>
@@ -107,6 +116,15 @@
 								$gradeScale
 								#if ($gradeTypeTable.get($assignment.getContent().getTypeOfGrade()) == $!tlang.getString("points"))
 									($tlang.getString("grade.max") $assignment.getContent().getMaxGradePointDisplay())
+									
+									<!--DN 2012-09-26:view grade iRubric -->
+									#if($!isShowiRubricLink && $!gradebookItem)
+										
+										<!--DN 2012-09-24: include file chef_assignments_irubric.vm -->
+										#parse ("/vm/assignment/chef_assignments_irubric.vm")
+										
+							        #end
+							        
 								#end
 							</td>
 						</tr>

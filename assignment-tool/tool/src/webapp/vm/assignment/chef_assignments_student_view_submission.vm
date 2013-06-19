@@ -253,6 +253,16 @@ function submitform(id)
 									#if ($gradeTypeTable.get($assignment.getContent().getTypeOfGrade()) == $!tlang.getString("points"))
 										($tlang.getString("grade.max") $assignment.getContent().getMaxGradePointDisplay())
 									#end
+									
+									<!--DN 2012-09-21: show rubric link, use for grade rubric -->
+									<!--if have define gradebookitem(this mean have included gradebook item from gradebook) -->
+									#if($!isShowiRubricLink && $!gradebookItem)
+			
+										<!--DN 2012-09-24: include file chef_assignments_irubric.vm -->
+										#parse ("/vm/assignment/chef_assignments_irubric.vm")								
+	
+								        #end
+
 								</strong>
 							</td>
 						</tr>
@@ -266,6 +276,16 @@ function submitform(id)
 								#if ($gradeTypeTable.get($assignment.getContent().getTypeOfGrade()) == $!tlang.getString("points"))
 									($tlang.getString("grade.max") $assignment.getContent().getMaxGradePointDisplay())
 								#end
+							
+								<!--DN 2012-09-21: show rubric link, use for grade rubric -->
+								<!--if have define gradebookitem(this mean have included gradebook item from gradebook) -->
+								#if($!isShowiRubricLink && $!gradebookItem)
+		
+									<!--DN 2012-09-24: include file chef_assignments_irubric.vm -->
+									#parse ("/vm/assignment/chef_assignments_irubric.vm")								
+
+							        #end
+
 							</td>
 						</tr>
 					#end
