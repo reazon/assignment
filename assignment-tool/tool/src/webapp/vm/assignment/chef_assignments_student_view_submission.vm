@@ -4,8 +4,10 @@
 <script type="text/javascript" src="/library/js/jquery.js"></script>
 <link href="/sakai-assignment-tool/css/assignment.css" type="text/css" rel="stylesheet" media="all" />
 <script type="text/javascript"  src="/sakai-assignment-tool/js/assignments.js"></script>
+
 <script type="text/javascript">
 $(document).ready(function(){
+
     setupToggleAreas('toggleAnchor', 'toggledContent', false, 'fast');
     $('#submissionFileCount').val(1);
     $('#addMoreAttachmentControls').click(function(e){
@@ -252,7 +254,18 @@ function submitform(id)
 									#end
 									#if ($gradeTypeTable.get($assignment.getContent().getTypeOfGrade()) == $!tlang.getString("points"))
 										($tlang.getString("grade.max") $assignment.getContent().getMaxGradePointDisplay())
+
 									#end
+									
+									<!--DN 2012-09-21: show rubric link, use for grade rubric -->
+									<!--if have define gradebookitem(this mean have included gradebook item from gradebook) -->
+									#if($!isShowiRubricLink && $!gradebookItem)
+			
+										<!--DN 2012-09-24: include file chef_assignments_irubric.vm -->
+										#parse ("/vm/assignment/chef_assignments_irubric.vm")								
+	
+							        #end
+							        
 								</strong>
 							</td>
 						</tr>
@@ -266,6 +279,16 @@ function submitform(id)
 								#if ($gradeTypeTable.get($assignment.getContent().getTypeOfGrade()) == $!tlang.getString("points"))
 									($tlang.getString("grade.max") $assignment.getContent().getMaxGradePointDisplay())
 								#end
+								
+								<!--DN 2012-09-21: show rubric link, use for grade rubric -->
+								<!--if have define gradebookitem(this mean have included gradebook item from gradebook) -->
+								#if($!isShowiRubricLink && $!gradebookItem)
+		
+									<!--DN 2012-09-24: include file chef_assignments_irubric.vm -->
+									#parse ("/vm/assignment/chef_assignments_irubric.vm")								
+
+						        #end
+						        
 							</td>
 						</tr>
 					#end

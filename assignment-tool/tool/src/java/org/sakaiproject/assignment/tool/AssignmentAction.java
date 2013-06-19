@@ -1249,6 +1249,9 @@ public class AssignmentAction extends PagedResourceActionII
                 submitter = user;
             }
             s = getSubmission(assignment.getReference(), submitter, "build_student_view_submission_context", state);
+		
+		//DN 2012-09-24: value for iRubric URL
+		verifyAsmAndSetValuesiRubric(assignment, 0, context, s, submitter.getId(), currentAssignmentReference);
 
 			if (s != null)
 			{
@@ -1483,6 +1486,9 @@ public class AssignmentAction extends PagedResourceActionII
 			AssignmentSubmission submission = getSubmission(aReference, user, "build_student_preview_submission_context", state);
 			context.put("submission", submission);
 			
+			//DN 2012-10-12: check grade type and set value for iRubric
+			verifyAsmAndSetValuesiRubric(assignment, 0, context, submission, aReference);
+
 			context.put("canSubmit", Boolean.valueOf(AssignmentService.canSubmit((String) state.getAttribute(STATE_CONTEXT_STRING), assignment)));
 			
 			// can the student view model answer or not
@@ -1587,6 +1593,9 @@ public class AssignmentAction extends PagedResourceActionII
 			}
 			context.put("submission", submission);
 			
+			//DN 2012-10-12: check grade type and set values for irubric
+			verifyAsmAndSetValuesiRubric(assignment, 0, context, submission, assignment.getTitle());
+
 			// can the student view model answer or not
 			canViewAssignmentIntoContext(context, assignment, submission);
 		}
@@ -2418,6 +2427,19 @@ public class AssignmentAction extends PagedResourceActionII
 			{
 				GradebookService g = (GradebookService) ComponentManager.get("org.sakaiproject.service.gradebook.GradebookService");
 				String gradebookUid = ToolManager.getInstance().getCurrentPlacement().getContext();
+				
+				//DN 2012-09-26:get values for iRubric
+				boolean isShowiRubricLink = isShowiRubricLink();
+				if(gradeType == 3 && isShowiRubricLink) { //if grade scale is of type point and show rubric link
+					
+					//DN 2012-09-24:set irubric values into file chef_assignments_instructor_grading_submission.vm
+					setValuesiRubric(associateGradebookAssignment, context, gradebookUid, assignmentId);
+					
+					//set icon and grade irubric
+					context.put("Purpose", "grade");
+					
+				}				
+				context.put("isShowiRubricLink", isShowiRubricLink);
 				if (g != null && g.isGradebookDefined(gradebookUid))
 				{
 					if (!g.currentUserHasGradingPerm(gradebookUid))
@@ -2436,7 +2458,13 @@ public class AssignmentAction extends PagedResourceActionII
 		{
 			submissionId = s.getId();
 			context.put("submission", s);
-			
+
+			//DN 2012-09-26: make sure that grade
+			//assignment is not null and gradetype is point
+			if(a != null && a.getContent().getTypeOfGrade() == 3)
+				// get student uid
+				context.put("studentUId",s.getSubmitterIds().get(0));
+
 			// show alert if student is working on a draft
 			if (!s.getSubmitted() // not submitted
 				&& ((s.getSubmittedText() != null && s.getSubmittedText().length()> 0) // has some text
@@ -2732,7 +2760,14 @@ public class AssignmentAction extends PagedResourceActionII
 		}
 
 		// submission
-		context.put("submission", getSubmission((String) state.getAttribute(GRADE_SUBMISSION_SUBMISSION_ID), "build_instructor_preview_grade_submission_context", state));
+		//context.put("submission", getSubmission((String) state.getAttribute(GRADE_SUBMISSION_SUBMISSION_ID), "build_instructor_preview_grade_submission_context", state));
+		
+		AssignmentSubmission submission = getSubmission((String) state.getAttribute(GRADE_SUBMISSION_SUBMISSION_ID), "build_instructor_preview_grade_submission_context", state);
+		context.put("submission", submission);
+				
+		if(a != null)
+			//DN 2012-09-26:check gradetype and set values for iRubric
+			verifyAsmAndSetValuesiRubric(a, gradeType, context, submission, assignmentId);	
 
 		User user = (User) state.getAttribute(STATE_USER);
 		context.put("user", user);
@@ -13223,5 +13258,97 @@ public class AssignmentAction extends PagedResourceActionII
 	protected void letterGradeOptionsIntoContext(Context context) {
 		String lOptions = ServerConfigurationService.getString("assignment.letterGradeOptions", "A+,A,A-,B+,B,B-,C+,C,C-,D+,D,D-,E,F");
 		context.put("letterGradeOptions", StringUtil.split(lOptions, ","));
+	}
+
+	/**
+	 * DN 2012-09-24: set values iRubric(gradebookUId,gradebookItem) into file .vm
+	 * associateGradebookAssignment: name of gradebook item
+	 * (associateGradebookAssignment == externalId if type assignment add to gradebook)
+	 * assignmentId: externalId of table GB-GradableObject_T
+	 * gradebookUId
+	 */
+	protected void setValuesiRubric(String associateGradebookAssignment, Context context, String gradebookUId, String assignmentId) {
+		
+		if(gradebookUId == null) {
+			//DN 2012-09-21: get gradebookUId
+			gradebookUId = ToolManager.getInstance().getCurrentPlacement().getContext();
+		}
+		//set var gradebookUId in file vm
+		context.put("gradebookUId",gradebookUId);
+		
+		//get gradeObjectId				
+		//DN 2012-11-13: change component
+		org.sakaiproject.assignment.api.AssignmentRubService asmRubService = (org.sakaiproject.assignment.api.AssignmentRubService) ComponentManager.get("org.sakaiproject.assignment.api.AssignmentRubService");
+		Long gradeObjectId;
+		
+		//if name associateGbAsm equal string assignmentId(this mean: assignmentId is externalId in table GB_GradableObject_T)
+		if(assignmentId == null || associateGradebookAssignment.equals(assignmentId)){
+			
+			gradeObjectId = asmRubService.getGradableObjectIdByExternalId(associateGradebookAssignment, gradebookUId);
+
+			//List assignments = asmRubService.getAssignmentsByGradebookUId(gradebookUId);
+			//M_log.error(assignments);
+		}else{
+			//else associateGradebookAssignment is the name of gradebook item associcated with asm
+			gradeObjectId = asmRubService.getGradableObjectId(associateGradebookAssignment, gradebookUId);
+			
+			if(gradeObjectId == null)
+				//name of gradebook item
+				gradeObjectId = asmRubService.getGradableObjectId(assignmentId, gradebookUId);
+		}
+		//set var gradebookItem in file vm
+    	context.put("gradebookItem", gradeObjectId);			
+		
+	}
+		
+	/**
+	 * DN 2012-10-12: verify grade type and set values iRubric into file .vm
+	 * assignment
+	 * gradeType (gradeType=0 is never get gradeType)
+	 * Context
+	 * 
+	 */
+	protected void verifyAsmAndSetValuesiRubric(Assignment a, Integer gradeType, Context context, AssignmentSubmission s, String assignmentId){
+		//DN 2013-04-18: get value of show iRubric link
+		boolean isShowiRubricLink = isShowiRubricLink();
+		//DN 2013-04-17: if allow show iRubric
+		if(isShowiRubricLink) {
+		
+			String associateGradebookAssignment = StringUtils.trimToNull(a.getProperties().getProperty(AssignmentService.PROP_ASSIGNMENT_ASSOCIATE_GRADEBOOK_ASSIGNMENT));
+		
+			/*Grade types
+			GRADE_TYPE_NOT_SET: -1; UNGRADED_GRADE_TYPE: 1;	LETTER_GRADE_TYPE: 2; SCORE_GRADE_TYPE = 3;
+			PASS_FAIL_GRADE_TYPE = 4;CHECK_GRADE_TYPE = 5;
+			*/
+			if(gradeType == 0) //if is 0 (this mean don't never get gradeType)
+				gradeType = a.getContent().getTypeOfGrade();
+		
+			//if associateGradebookAssignment is not null and grade scale is of type point
+			if(associateGradebookAssignment != null && gradeType == 3) {
+				//set value(gradebookUId,gradebookItem) for irubric
+				setValuesiRubric(associateGradebookAssignment, context, null, assignmentId);
+							
+				//set icon and view/grade irubric
+				context.put("Purpose", "view");
+				//DN 2013-02-02: get student uid
+				if(s != null){		
+					List submitterIds = s.getSubmitterIds();			
+					context.put("studentUId", submitterIds != null && !submitterIds.isEmpty() ? submitterIds.get(0):"");	
+				}
+			}
+		}	
+		context.put("isShowiRubricLink",isShowiRubricLink);
+	} 
+
+	// DN 2013-02-02: set studentUId when AssignmentSubmission is null
+	protected void verifyAsmAndSetValuesiRubric(Assignment a, Integer gradeType, Context context, AssignmentSubmission s, String userId, String assignmentId){
+		verifyAsmAndSetValuesiRubric(a, gradeType, context, s, assignmentId);		
+		if(s == null) {
+			context.put("studentUId",userId);
+		}
+	}
+	protected boolean isShowiRubricLink(){
+		org.sakaiproject.assignment.api.AssignmentRubService asmRubService = (org.sakaiproject.assignment.api.AssignmentRubService) ComponentManager.get("org.sakaiproject.assignment.api.AssignmentRubService");
+		return asmRubService.isShowiRubricLink();
 	}
 }	
